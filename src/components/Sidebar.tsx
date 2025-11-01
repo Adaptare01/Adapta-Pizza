@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShoppingCart, Truck, Settings, Pizza } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, Truck, Settings, Pizza, FileText } from "lucide-react";
 
 const Sidebar = () => {
   const navLinkClasses =
@@ -41,6 +41,15 @@ const Sidebar = () => {
         >
           <Truck className="mr-3 h-5 w-5" />
           Entregas
+        </NavLink>
+        <NavLink
+          to="/relatorios"
+          className={({ isActive }) =>
+            `${navLinkClasses} ${isActive ? activeNavLinkClasses : "hover:bg-gray-100 dark:hover:bg-gray-700"}`
+          }
+        >
+          <FileText className="mr-3 h-5 w-5" />
+          Relatórios
         </NavLink>
         <NavLink
           to="/configuracoes"
