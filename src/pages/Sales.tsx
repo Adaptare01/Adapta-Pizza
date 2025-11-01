@@ -88,18 +88,19 @@ const Sales = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead><TableHead>Vendedor</TableHead><TableHead>Sabores</TableHead><TableHead>Data de Retirada</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead>
+                <TableHead>Cliente</TableHead><TableHead>Nº Cartão</TableHead><TableHead>Vendedor</TableHead><TableHead>Sabores</TableHead><TableHead>Data de Retirada</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                  <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
                 ))
               ) : (
                 sales?.map((sale) => (
                   <TableRow key={sale.id}>
                     <TableCell><div className="font-medium">{sale.customer_name}</div><div className="text-sm text-muted-foreground">{sale.customer_phone}</div></TableCell>
+                    <TableCell>{sale.card_number}</TableCell>
                     <TableCell>{sale.sellers?.name || 'N/A'}</TableCell>
                     <TableCell>{sale.flavor1?.name}{sale.flavor2 ? `, ${sale.flavor2.name}` : ''}</TableCell>
                     <TableCell>{new Date(sale.pickup_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>

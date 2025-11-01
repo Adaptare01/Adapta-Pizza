@@ -22,6 +22,7 @@ export interface SaleData {
   flavor1_id: string;
   flavor2_id?: string | null;
   status?: string;
+  card_number?: number | null;
 }
 
 interface SaleFormProps {
@@ -37,6 +38,7 @@ interface SaleFormProps {
 export const SaleForm = ({ sale, flavors, sellers, pickupDates, onSubmit, onCancel, isSubmitting }: SaleFormProps) => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
   const [sellerId, setSellerId] = useState("");
   const [pickupDate, setPickupDate] = useState("");
   const [numFlavors, setNumFlavors] = useState("1");
@@ -47,6 +49,7 @@ export const SaleForm = ({ sale, flavors, sellers, pickupDates, onSubmit, onCanc
     if (sale) {
       setCustomerName(sale.customer_name);
       setCustomerPhone(sale.customer_phone || "");
+      setCardNumber(sale.card_number?.toString() || "");
       setSellerId(sale.seller_id);
       setPickupDate(sale.pickup_date);
       setFlavor1Id(sale.flavor1_id);
@@ -60,6 +63,7 @@ export const SaleForm = ({ sale, flavors, sellers, pickupDates, onSubmit, onCanc
     } else {
       setCustomerName("");
       setCustomerPhone("");
+      setCardNumber("");
       setSellerId("");
       setPickupDate("");
       setNumFlavors("1");
@@ -79,6 +83,7 @@ export const SaleForm = ({ sale, flavors, sellers, pickupDates, onSubmit, onCanc
       flavor1_id: flavor1Id,
       flavor2_id: numFlavors === "2" ? flavor2Id : null,
       status: sale?.status || "Pendente",
+      card_number: cardNumber ? parseInt(cardNumber, 10) : null,
     };
     onSubmit(saleData);
   };
@@ -92,6 +97,10 @@ export const SaleForm = ({ sale, flavors, sellers, pickupDates, onSubmit, onCanc
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="customerPhone" className="text-right">Telefone</Label>
         <Input id="customerPhone" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="col-span-3" />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="cardNumber" className="text-right">Nº Cartão</Label>
+        <Input id="cardNumber" type="number" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="col-span-3" />
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="seller" className="text-right">Vendedor</Label>
