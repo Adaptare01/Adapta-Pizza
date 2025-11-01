@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface Sale {
   id: string;
@@ -15,17 +17,19 @@ interface Sale {
   customer_phone: string | null;
   pickup_date: string;
   status: "Pendente" | "Entregue" | "Cancelado";
+  card_number: number | null;
   flavor1: { name: string } | null;
   flavor2: { name: string } | null;
 }
 
 const Deliveries = () => {
   const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: sales, isLoading } = useQuery<Sale[]>({
     queryKey: ["salesForDeliveries"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sales").select(`id, customer_name, customer_phone, pickup_date, status, flavor1:flavors!flavor1_id(name), flavor2:flavors!flavor2_id(name)`).order("pickup_date");
+      const { data, error } = await supabase.from("sales").select(`id, customer_name, customer_phone, pickup_date, status, card_number, flavor1:flavors!flavor1_id(name), flavor2:flavors!flavor2_id(name)`).order("pickup_date");
       if (error) throw new Error(error.message);
       return data || [];
     },
@@ -77,27 +81,43 @@ const Deliveries = () => {
     }
   };
 
+  const filteredSales = sales?.filter(sale =>
+    sale.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (sale.card_number && sale.card_number.toString().includes(searchTerm))
+  );
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Registro de Entregas</h1>
-      <p className="text-gray-600 dark:text-gray-400">Gerencie a entrega das pizzas aos clientes.</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Registro de Entregas</h1>
+          <p className="text-gray-600 dark:text-gray-400">Gerencie a entrega das pizzas aos clientes.</p>
+        </div>
+        <Input
+          placeholder="Buscar por cliente ou cartão..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead><TableHead>Sabores</TableHead><TableHead>Data de Retirada</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead>
+                <TableHead>Cliente</TableHead><TableHead>Nº Cartão</TableHead><TableHead>Sabores</TableHead><TableHead>Data de Retirada</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                  <TableRow key={i}><TableCell colSpan={6}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
                 ))
               ) : (
-                sales?.map((sale) => (
+                filteredSales?.map((sale) => (
                   <TableRow key={sale.id}>
                     <TableCell className="font-medium">{sale.customer_name}</TableCell>
+                    <TableCell>{sale.card_number}</TableCell>
                     <TableCell>{sale.flavor1?.name}{sale.flavor2 ? `, ${sale.flavor2.name}` : ''}</TableCell>
                     <TableCell>{new Date(sale.pickup_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>
                     <TableCell><Badge className={cn(getStatusBadgeClass(sale.status))}>{sale.status}</Badge></TableCell>

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 interface Sale extends SaleData {
   sellers: { name: string } | null;
@@ -21,6 +22,7 @@ const Sales = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSale, setEditingSale] = useState<SaleData | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: sales, isLoading: isLoadingSales } = useQuery<Sale[]>({
     queryKey: ["sales"],
@@ -69,11 +71,24 @@ const Sales = () => {
 
   const isLoading = isLoadingSales || isLoadingFlavors || isLoadingSellers || isLoadingSettings;
 
+  const filteredSales = sales?.filter(sale =>
+    sale.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (sale.card_number && sale.card_number.toString().includes(searchTerm))
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Registro de Vendas</h1>
-        <Button onClick={openNewDialog}><PlusCircle className="mr-2 h-4 w-4" />Registrar Venda</Button>
+        <div className="flex items-center space-x-2">
+          <Input
+            placeholder="Buscar por cliente ou cartão..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+          <Button onClick={openNewDialog}><PlusCircle className="mr-2 h-4 w-4" />Registrar Venda</Button>
+        </div>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -97,7 +112,7 @@ const Sales = () => {
                   <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
                 ))
               ) : (
-                sales?.map((sale) => (
+                filteredSales?.map((sale) => (
                   <TableRow key={sale.id}>
                     <TableCell><div className="font-medium">{sale.customer_name}</div><div className="text-sm text-muted-foreground">{sale.customer_phone}</div></TableCell>
                     <TableCell>{sale.card_number}</TableCell>
