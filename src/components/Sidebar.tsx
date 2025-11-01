@@ -11,7 +11,7 @@ const Sidebar = () => {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-2xl font-bold flex items-center">
           <Pizza className="mr-2 h-6 w-6" />
-          Pizza CRM
+          Adapta Pizza
         </h1>
       </div>
       <nav className="flex-1 p-4 space-y-2">
