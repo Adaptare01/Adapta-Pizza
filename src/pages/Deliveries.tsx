@@ -57,7 +57,7 @@ const Deliveries = () => {
       showError("O número de telefone cadastrado é inválido.");
       return;
     }
-    const message = `Olá ${customerName}, gostaria de lembrar que esperamos você para retirar sua pizza.\n\nAbraços`;
+    const message = `Olá ${customerName}, gostaria de lembrar que esperamos você para retirar sua pizza.\n\nEndereço: Pavilhão da Paróquia São José, no Bairro Cruzeiro do Sul.\n\nAbraços`;
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
