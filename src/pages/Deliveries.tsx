@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface Sale {
   id: string;
@@ -63,6 +64,19 @@ const Deliveries = () => {
     window.open(whatsappUrl, '_blank');
   };
 
+  const getStatusBadgeClass = (status: Sale["status"]) => {
+    switch (status) {
+      case "Pendente":
+        return "bg-orange-600 text-white hover:bg-orange-700";
+      case "Entregue":
+        return "bg-green-700 text-white hover:bg-green-800";
+      case "Cancelado":
+        return "bg-gray-500 text-white hover:bg-gray-600";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Registro de Entregas</h1>
@@ -86,9 +100,9 @@ const Deliveries = () => {
                     <TableCell className="font-medium">{sale.customer_name}</TableCell>
                     <TableCell>{sale.flavor1?.name}{sale.flavor2 ? `, ${sale.flavor2.name}` : ''}</TableCell>
                     <TableCell>{new Date(sale.pickup_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>
-                    <TableCell><Badge>{sale.status}</Badge></TableCell>
+                    <TableCell><Badge className={cn(getStatusBadgeClass(sale.status))}>{sale.status}</Badge></TableCell>
                     <TableCell className="text-right space-x-2">
-                      <Button variant="outline" size="icon" onClick={() => handleWhatsAppMessage(sale.customer_name, sale.customer_phone)} disabled={!sale.customer_phone} title="Enviar lembrete no WhatsApp">
+                      <Button size="icon" onClick={() => handleWhatsAppMessage(sale.customer_name, sale.customer_phone)} disabled={!sale.customer_phone} title="Enviar lembrete no WhatsApp" className="bg-green-500 hover:bg-green-600 text-white">
                         <MessageCircle className="h-4 w-4" />
                       </Button>
                       {sale.status === "Pendente" && (<Button size="sm" onClick={() => handleStatusChange(sale.id, "Entregue")} disabled={updateStatusMutation.isPending}><CheckCircle className="mr-2 h-4 w-4" />Registrar Entrega</Button>)}
