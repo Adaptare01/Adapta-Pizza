@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Undo2 } from "lucide-react";
+import { CheckCircle, Undo2, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface Sale {
   id: string;
   customer_name: string;
+  customer_phone: string | null;
   pickup_date: string;
   status: "Pendente" | "Entregue" | "Cancelado";
   flavor1: { name: string } | null;
@@ -23,7 +24,7 @@ const Deliveries = () => {
   const { data: sales, isLoading } = useQuery<Sale[]>({
     queryKey: ["salesForDeliveries"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sales").select(`id, customer_name, pickup_date, status, flavor1:flavors!flavor1_id(name), flavor2:flavors!flavor2_id(name)`).order("pickup_date");
+      const { data, error } = await supabase.from("sales").select(`id, customer_name, customer_phone, pickup_date, status, flavor1:flavors!flavor1_id(name), flavor2:flavors!flavor2_id(name)`).order("pickup_date");
       if (error) throw new Error(error.message);
       return data || [];
     },
@@ -44,6 +45,22 @@ const Deliveries = () => {
 
   const handleStatusChange = (id: string, newStatus: Sale["status"]) => {
     updateStatusMutation.mutate({ id, status: newStatus });
+  };
+
+  const handleWhatsAppMessage = (customerName: string, customerPhone: string | null) => {
+    if (!customerPhone) {
+      showError("Este cliente não possui um número de telefone cadastrado.");
+      return;
+    }
+    const formattedPhone = customerPhone.replace(/\D/g, '');
+    if (!formattedPhone) {
+      showError("O número de telefone cadastrado é inválido.");
+      return;
+    }
+    const message = `Olá ${customerName}, gostaria de lembrar que esperamos você para retirar sua pizza.\n\nAbraços`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -70,7 +87,10 @@ const Deliveries = () => {
                     <TableCell>{sale.flavor1?.name}{sale.flavor2 ? `, ${sale.flavor2.name}` : ''}</TableCell>
                     <TableCell>{new Date(sale.pickup_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>
                     <TableCell><Badge>{sale.status}</Badge></TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-2">
+                      <Button variant="outline" size="icon" onClick={() => handleWhatsAppMessage(sale.customer_name, sale.customer_phone)} disabled={!sale.customer_phone} title="Enviar lembrete no WhatsApp">
+                        <MessageCircle className="h-4 w-4" />
+                      </Button>
                       {sale.status === "Pendente" && (<Button size="sm" onClick={() => handleStatusChange(sale.id, "Entregue")} disabled={updateStatusMutation.isPending}><CheckCircle className="mr-2 h-4 w-4" />Registrar Entrega</Button>)}
                       {sale.status === "Entregue" && (<Button size="sm" variant="outline" onClick={() => handleStatusChange(sale.id, "Pendente")} disabled={updateStatusMutation.isPending}><Undo2 className="mr-2 h-4 w-4" />Cancelar Entrega</Button>)}
                       {sale.status === "Cancelado" && (<span className="text-sm text-muted-foreground">Pedido Cancelado</span>)}
