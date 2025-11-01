@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, Undo2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Sale {
@@ -58,22 +58,23 @@ const Deliveries = () => {
                 <TableRow key={sale.id}>
                   <TableCell className="font-medium">{sale.customerName}</TableCell>
                   <TableCell>{sale.flavor1}{sale.flavor2 && `, ${sale.flavor2}`}</TableCell>
-                  <TableCell>{new Date(sale.pickupDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(sale.pickupDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</TableCell>
                   <TableCell><Badge>{sale.status}</Badge></TableCell>
                   <TableCell className="text-right">
-                    {sale.status === "Pendente" ? (
-                      <div className="flex space-x-2 justify-end">
+                    {sale.status === "Pendente" && (
                         <Button size="sm" onClick={() => handleStatusChange(sale.id, "Entregue")}>
                           <CheckCircle className="mr-2 h-4 w-4" />
                           Registrar Entrega
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleStatusChange(sale.id, "Cancelado")}>
-                          <XCircle className="mr-2 h-4 w-4" />
-                          Cancelar
+                    )}
+                    {sale.status === "Entregue" && (
+                        <Button size="sm" variant="outline" onClick={() => handleStatusChange(sale.id, "Pendente")}>
+                          <Undo2 className="mr-2 h-4 w-4" />
+                          Cancelar Entrega
                         </Button>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Ação concluída</span>
+                    )}
+                    {sale.status === "Cancelado" && (
+                      <span className="text-sm text-muted-foreground">Pedido Cancelado</span>
                     )}
                   </TableCell>
                 </TableRow>
